@@ -6,6 +6,38 @@ import (
 	"sync"
 )
 
+const (
+	// ServiceOffering is a metadata name of service offering
+	ServiceOffering = "service-offering"
+	// AvailabilityZone is a metadata name of availability zone
+	AvailabilityZone = "availability-zone"
+	// LocalIpv4 is a metadata name of local ipv4
+	LocalIpv4 = "local-ipv4"
+	// LocalHostname is a metadata name of local hostname
+	LocalHostname = "local-hostname"
+	// PublicIpv4 is a metadata name of public ipv4
+	PublicIpv4 = "public-ipv4"
+	// PublicHostname is a metadata name of public hostname
+	PublicHostname = "public-hostname"
+	// InstanceID is a metadata name of instance id
+	InstanceID = "instance-id"
+	// UserData is a metadata name of userdata
+	UserData = "user-data"
+)
+
+// ResponseGroup is a metadata data group for response
+type ResponseGroup struct {
+	ServiceOffering  string
+	AvailabilityZone string
+	LocalIpv4        string
+	LocalHostname    string
+	PublicIpv4       string
+	PublicHostname   string
+	InstanceID       string
+	UserData         string
+}
+
+// Metadata is a interface of metadata struct
 type Metadata interface {
 	Request(string) (string, error)
 	ServiceOffering() (string, error)
@@ -17,7 +49,7 @@ type Metadata interface {
 	InstanceID() (string, error)
 	UserData() (string, error)
 	FetchAll() (map[string]string, error)
-	FetchData(types []string) (map[string]string, error)
+	FetchData([]string) (*ResponseGroup, error)
 }
 
 type metadata struct {
@@ -25,6 +57,8 @@ type metadata struct {
 	client *http.Client
 }
 
+
+// NewMetadata return *metadata
 func NewMetadata(domain string) *metadata {
 	return &metadata{
 		Domain: domain,
@@ -32,7 +66,7 @@ func NewMetadata(domain string) *metadata {
 	}
 }
 
-func (m *metadata) Request(metadataType string) (string, error) {
+func (m *metadata) request(metadataType string) (string, error) {
 	req, err := http.NewRequest("GET", "http://"+m.Domain+"/latest/"+metadataType, nil)
 	if err != nil {
 		return "", err
@@ -52,52 +86,52 @@ func (m *metadata) Request(metadataType string) (string, error) {
 }
 
 func (m *metadata) ServiceOffering() (string, error) {
-	return m.Request("service-offering")
+	return m.request(ServiceOffering)
 }
 
 func (m *metadata) AvailabilityZone() (string, error) {
-	return m.Request("availability-zone")
+	return m.request(AvailabilityZone)
 }
 
 func (m *metadata) LocalIpv4() (string, error) {
-	return m.Request("local-ipv4")
+	return m.request(LocalIpv4)
 }
 
 func (m *metadata) LocalHostname() (string, error) {
-	return m.Request("local-hostname")
+	return m.request(LocalHostname)
 }
 
 func (m *metadata) PublicIpv4() (string, error) {
-	return m.Request("public-ipv4")
+	return m.request(PublicIpv4)
 }
 
 func (m *metadata) PublicHostname() (string, error) {
-	return m.Request("public-hostname")
+	return m.request(PublicHostname)
 }
 
 func (m *metadata) InstanceID() (string, error) {
-	return m.Request("instance-id")
+	return m.request(InstanceID)
 }
 
 func (m *metadata) UserData() (string, error) {
-	return m.Request("user-data")
+	return m.request(UserData)
 }
 
-func (m *metadata) FetchAll() (map[string]string, error) {
+func (m *metadata) FetchAll() (*ResponseGroup, error) {
 	return m.FetchData([]string{
-		"service-offering",
-		"availability-zone",
-		"local-ipv4",
-		"local-hostname",
-		"public-ipv4",
-		"public-hostname",
-		"instance-id",
-		"user-data",
+		ServiceOffering,
+		AvailabilityZone,
+		LocalIpv4,
+		LocalHostname,
+		PublicIpv4,
+		PublicHostname,
+		InstanceID,
+		UserData,
 	})
 }
 
-func (m *metadata) FetchData(types []string) (map[string]string, error) {
-	result := map[string]string{}
+func (m *metadata) FetchData(types []string) (*ResponseGroup, error) {
+	group := &ResponseGroup{}
 	var err error
 	wg := sync.WaitGroup{}
 
@@ -106,61 +140,61 @@ func (m *metadata) FetchData(types []string) (map[string]string, error) {
 
 		go func(t string) {
 			switch t {
-			case "service-offering":
+			case ServiceOffering:
 				res, e := m.ServiceOffering()
 				if e != nil {
 					err = e
 				}
-				result["ServiceOffering"] = res
+				group.ServiceOffering = res
 
-			case "availability-zone":
+			case AvailabilityZone:
 				res, e := m.AvailabilityZone()
 				if e != nil {
 					err = e
 				}
-				result["AvailabilityZone"] = res
+				group.AvailabilityZone = res
 
-			case "local-ipv4":
+			case LocalIpv4:
 				res, e := m.LocalIpv4()
 				if e != nil {
 					err = e
 				}
-				result["LocalIpv4"] = res
+				group.LocalIpv4 = res
 
-			case "local-hostname":
+			case LocalHostname:
 				res, e := m.LocalHostname()
 				if e != nil {
 					err = e
 				}
-				result["LocalHostname"] = res
+				group.LocalHostname = res
 
-			case "public-ipv4":
+			case PublicIpv4:
 				res, e := m.PublicIpv4()
 				if e != nil {
 					err = e
 				}
-				result["PublicIpv4"] = res
+				group.PublicIpv4 = res
 
-			case "public-hostname":
+			case PublicHostname:
 				res, e := m.PublicHostname()
 				if e != nil {
 					err = e
 				}
-				result["PublicHostname"] = res
+				group.PublicHostname = res
 
-			case "instance-id":
+			case InstanceID:
 				res, e := m.InstanceID()
 				if e != nil {
 					err = e
 				}
-				result["InstanceID"] = res
+				group.InstanceID = res
 
-			case "user-data":
+			case UserData:
 				res, e := m.UserData()
 				if e != nil {
 					err = e
 				}
-				result["UserData"] = res
+				group.UserData = res
 			}
 
 			wg.Done()
@@ -173,5 +207,5 @@ func (m *metadata) FetchData(types []string) (map[string]string, error) {
 		return nil, err
 	}
 
-	return result, nil
+	return group, nil
 }
