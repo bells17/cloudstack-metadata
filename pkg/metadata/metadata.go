@@ -48,7 +48,7 @@ type Metadata interface {
 	PublicHostname() (string, error)
 	InstanceID() (string, error)
 	UserData() (string, error)
-	FetchAll() (map[string]string, error)
+	FetchAll() (*ResponseGroup, error)
 	FetchData([]string) (*ResponseGroup, error)
 }
 
@@ -56,7 +56,6 @@ type metadata struct {
 	Domain string
 	client *http.Client
 }
-
 
 // NewMetadata return *metadata
 func NewMetadata(domain string) *metadata {
