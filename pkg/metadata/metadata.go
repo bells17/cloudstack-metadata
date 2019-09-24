@@ -39,7 +39,6 @@ type ResponseGroup struct {
 
 // Metadata is a interface of metadata struct
 type Metadata interface {
-	Request(string) (string, error)
 	ServiceOffering() (string, error)
 	AvailabilityZone() (string, error)
 	LocalIpv4() (string, error)

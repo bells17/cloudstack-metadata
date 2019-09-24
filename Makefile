@@ -7,7 +7,7 @@ GO111MODULE=on
 OUTPUT_DIR=./bin
 
 
-all: init lint test build
+all: init test build
 
 .PHONY: build
 build:
@@ -18,11 +18,6 @@ build:
 test:
 	@echo "==> Testing all packages"
 	@go test -v ./...
-
-.PHONY: lint
-lint:
-	@echo "==> Linting all packages"
-	@golangci-lint run ./...
 
 .PHONY: clean
 clean:
